@@ -39,7 +39,7 @@ export default function About() {
                     </motion.p>
                 </motion.div>
 
-                <div className="about-content" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4rem', alignItems: 'center' }}>
+                <div className="about-content">
                     <motion.div
                         initial="hidden"
                         whileInView="visible"
