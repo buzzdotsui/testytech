@@ -24,6 +24,7 @@ export interface ChatMessage {
 export enum SectionId {
   HOME = 'home',
   SERVICES = 'services',
+  PORTFOLIO = 'portfolio',
   PRICING = 'pricing',
   ABOUT = 'about',
   TESTIMONIALS = 'testimonials',

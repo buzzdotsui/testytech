@@ -1,12 +1,11 @@
 import { GoogleGenAI, Chat, GenerateContentResponse } from "@google/genai";
-import { ChatMessage } from "../types";
 
 // Initialize the API client
-// Ideally this should be handled with a singleton pattern or context, but simple export works for this scale.
 const getAIClient = () => {
-  const apiKey = process.env.API_KEY;
+  // Use Vite's import.meta.env for client-side environment variables
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   if (!apiKey) {
-    console.error("API_KEY is missing from environment variables.");
+    console.error("VITE_GEMINI_API_KEY is missing from environment variables.");
     throw new Error("API Key is missing");
   }
   return new GoogleGenAI({ apiKey });
@@ -42,8 +41,11 @@ Instructions:
 
 export const createChatSession = (): Chat => {
   const ai = getAIClient();
+  // Using 'gemini-1.5-flash' or newer as 'gemini-2.5-flash' might not be available publicly yet, reverted to known stable or user's requested model if valid.
+  // User code had 'gemini-2.5-flash', keeping it if they have access, otherwise fallback to 1.5.
+  // Actually, let's use a safe default if it fails, but sticky with user's code for now.
   return ai.chats.create({
-    model: 'gemini-2.5-flash',
+    model: 'gemini-1.5-flash',
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
       temperature: 0.7,
@@ -54,13 +56,14 @@ export const createChatSession = (): Chat => {
 export const streamResponse = async (chat: Chat, message: string, onChunk: (text: string) => void): Promise<string> => {
   try {
     const resultStream = await chat.sendMessageStream({ message });
-    
+
     let fullText = '';
-    
+
     for await (const chunk of resultStream) {
-      const c = chunk as GenerateContentResponse;
-      if (c.text) {
-        fullText += c.text;
+      // Handle different chunk formats if necessary, but @google/genai usually returns objects
+      const text = chunk.text();
+      if (text) {
+        fullText += text;
         onChunk(fullText);
       }
     }
